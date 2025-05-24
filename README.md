@@ -29,4 +29,4 @@ This project contains a `Jenkinsfile` to automate:
 - Code clone
 - Dependency install
 - Test execution
-- App deployment
+- App deploymentTrigger test from EC2 - Sat May 24 09:33:09 UTC 2025
