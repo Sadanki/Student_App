@@ -1,6 +1,7 @@
 import smtplib
 from email.mime.text import MIMEText
 import sys
+import os
 
 # Read args: success/failure, build URL etc.
 status = sys.argv[1] if len(sys.argv) > 1 else "SUCCESS"
