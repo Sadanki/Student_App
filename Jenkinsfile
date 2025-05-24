@@ -1,30 +1,44 @@
 pipeline {
     agent any
 
+    environment {
+        VENV_DIR = 'venv'
+    }
+
     stages {
-        stage('Clone Repo') {
+        stage('Build') {
             steps {
-                git 'https://github.com/mohanDevOps-arch/Student_App.git'
+                echo 'Installing dependencies...'
+                sh 'python3 -m venv $VENV_DIR'
+                sh './venv/bin/pip install -r requirements.txt'
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Test') {
             steps {
-                sh 'pip install -r requirements.txt'
+                echo 'Running tests...'
+                sh './venv/bin/python3 -m pytest tests/'
             }
         }
 
-        stage('Run Tests') {
+        stage('Deploy') {
             steps {
-                sh 'pytest test_app.py --maxfail=1 --disable-warnings -q'
+                echo 'Starting Flask app...'
+                sh 'nohup ./venv/bin/python3 app.py &'
             }
         }
+    }
 
-        stage('Run Flask App') {
-            steps {
-                sh 'docker run -d 5000:5000 python:3.10 nohup python app.py &
-'
-            }
+    post {
+        success {
+            mail to: 'sadanki190@gmail.com',
+                 subject: "✅ SUCCESS: ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
+                 body: "Build passed. Check here: ${env.BUILD_URL}"
+        }
+        failure {
+            mail to: 'sadanki190@gmail.com',
+                 subject: "❌ FAILURE: ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
+                 body: "Build failed. Fix it here: ${env.BUILD_URL}"
         }
     }
 }
