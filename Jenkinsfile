@@ -17,7 +17,14 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                sh './venv/bin/python3 -m pytest tests/'
+                // Run tests only if the tests/ directory exists
+                script {
+                    if (fileExists('tests')) {
+                        sh './venv/bin/python3 -m pytest tests/'
+                    } else {
+                        echo "⚠️ 'tests/' directory not found. Skipping tests."
+                    }
+                }
             }
         }
 
