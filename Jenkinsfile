@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                echo 'Installing dependencies...'
+                echo '📦 Installing dependencies...'
                 sh 'python3 -m venv $VENV_DIR'
                 sh './venv/bin/pip install -r requirements.txt'
             }
@@ -16,8 +16,7 @@ pipeline {
 
         stage('Test') {
             steps {
-                echo 'Running tests...'
-                // Run tests only if the tests/ directory exists
+                echo '🧪 Running tests...'
                 script {
                     if (fileExists('tests')) {
                         sh './venv/bin/python3 -m pytest tests/'
@@ -30,7 +29,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                echo 'Starting Flask app...'
+                echo '🚀 Starting Flask app...'
                 sh 'nohup ./venv/bin/python3 app.py &'
             }
         }
@@ -38,14 +37,17 @@ pipeline {
 
     post {
         success {
-            mail to: 'sadanki190@gmail.com',
-                 subject: "✅ SUCCESS: ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
-                 body: "Build passed. Check here: ${env.BUILD_URL}"
+            echo '✅ Build succeeded. Sending email...'
+            withCredentials([string(credentialsId: 'GMAIL_APP_PASSWORD', variable: 'GMAIL_APP_PASSWORD')]) {
+                sh 'GMAIL_APP_PASSWORD=$GMAIL_APP_PASSWORD python3 send_email.py SUCCESS ${BUILD_URL}'
+            }
         }
+
         failure {
-            mail to: 'sadanki190@gmail.com',
-                 subject: "❌ FAILURE: ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
-                 body: "Build failed. Fix it here: ${env.BUILD_URL}"
+            echo '❌ Build failed. Sending email...'
+            withCredentials([string(credentialsId: 'GMAIL_APP_PASSWORD', variable: 'GMAIL_APP_PASSWORD')]) {
+                sh 'GMAIL_APP_PASSWORD=$GMAIL_APP_PASSWORD python3 send_email.py FAILURE ${BUILD_URL}'
+            }
         }
     }
 }
